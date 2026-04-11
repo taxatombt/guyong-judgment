@@ -1,0 +1,575 @@
+{
+  "signals": [
+    {
+      "id": 1,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:08:57.290451"
+    },
+    {
+      "id": 2,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:10:03.708834"
+    },
+    {
+      "id": 3,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:10:26.476246"
+    },
+    {
+      "id": 4,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:10:48.803221"
+    },
+    {
+      "id": 5,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:11:23.885430"
+    },
+    {
+      "id": 6,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:11:53.776402"
+    },
+    {
+      "id": 7,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:12:10.870685"
+    },
+    {
+      "id": 8,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:12:39.963559"
+    },
+    {
+      "id": 9,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:12:58.390455"
+    },
+    {
+      "id": 10,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:13:18.530232"
+    },
+    {
+      "id": 11,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:13:35.056101"
+    },
+    {
+      "id": 12,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:13:50.229544"
+    },
+    {
+      "id": 13,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:14:10.011188"
+    },
+    {
+      "id": 14,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:14:45.547513"
+    },
+    {
+      "id": 15,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:14:45.566028"
+    },
+    {
+      "id": 16,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:21:40.837862"
+    },
+    {
+      "id": 17,
+      "task_id": "unknown",
+      "emotion_label": "excitement",
+      "intensity": 0.7,
+      "is_signal": true,
+      "description": "兴奋提示：发现和长期目标对齐的高价值机会，值得深入探索",
+      "created_at": "2026-04-11T00:21:40.853867"
+    },
+    {
+      "id": 18,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:43:09.811580"
+    },
+    {
+      "id": 19,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:43:09.839625"
+    },
+    {
+      "id": 20,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:45:03.149709"
+    },
+    {
+      "id": 21,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:45:03.167703"
+    },
+    {
+      "id": 22,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:45:30.267595"
+    },
+    {
+      "id": 23,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:45:30.284594"
+    },
+    {
+      "id": 24,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:45:54.372356"
+    },
+    {
+      "id": 25,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:45:54.389870"
+    },
+    {
+      "id": 26,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:46:18.836521"
+    },
+    {
+      "id": 27,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:46:18.857533"
+    },
+    {
+      "id": 28,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:46:26.952908"
+    },
+    {
+      "id": 29,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:46:26.972913"
+    },
+    {
+      "id": 30,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:46:34.208487"
+    },
+    {
+      "id": 31,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:46:34.228005"
+    },
+    {
+      "id": 32,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:46:44.588676"
+    },
+    {
+      "id": 33,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:46:44.609191"
+    },
+    {
+      "id": 34,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:47:04.296009"
+    },
+    {
+      "id": 35,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:47:04.318022"
+    },
+    {
+      "id": 36,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:47:19.037197"
+    },
+    {
+      "id": 37,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:47:19.055734"
+    },
+    {
+      "id": 38,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:47:43.494302"
+    },
+    {
+      "id": 39,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:47:43.514026"
+    },
+    {
+      "id": 40,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:04.878731"
+    },
+    {
+      "id": 41,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:04.897245"
+    },
+    {
+      "id": 42,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:04.973384"
+    },
+    {
+      "id": 43,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:12.998330"
+    },
+    {
+      "id": 44,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:13.019851"
+    },
+    {
+      "id": 45,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:13.096746"
+    },
+    {
+      "id": 46,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:38.160122"
+    },
+    {
+      "id": 47,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:38.182131"
+    },
+    {
+      "id": 48,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:48:38.268890"
+    },
+    {
+      "id": 49,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:16.738257"
+    },
+    {
+      "id": 50,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:16.760891"
+    },
+    {
+      "id": 51,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:16.845927"
+    },
+    {
+      "id": 52,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:28.882368"
+    },
+    {
+      "id": 53,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:28.901896"
+    },
+    {
+      "id": 54,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:28.978428"
+    },
+    {
+      "id": 55,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:40.998342"
+    },
+    {
+      "id": 56,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:41.019353"
+    },
+    {
+      "id": 57,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:49:41.099393"
+    },
+    {
+      "id": 58,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:50:05.983882"
+    },
+    {
+      "id": 59,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:50:06.003396"
+    },
+    {
+      "id": 60,
+      "task_id": "unknown",
+      "emotion_label": "calm",
+      "intensity": 0.0,
+      "is_signal": false,
+      "description": "",
+      "created_at": "2026-04-11T05:50:06.072204"
+    }
+  ],
+  "patterns": [
+    {
+      "label": "anxiety",
+      "trigger_context": "信息不足/风险不确定",
+      "signal_probability": 0.8,
+      "total_count": 1,
+      "signal_count": 1
+    },
+    {
+      "label": "excitement",
+      "trigger_context": "发现高价值机会",
+      "signal_probability": 0.7,
+      "total_count": 1,
+      "signal_count": 1
+    },
+    {
+      "label": "calm",
+      "trigger_context": "信息充分/判断明确",
+      "signal_probability": 0.1,
+      "total_count": 1,
+      "signal_count": 0
+    },
+    {
+      "label": "anger",
+      "trigger_context": "违反原则/被冒犯",
+      "signal_probability": 0.9,
+      "total_count": 1,
+      "signal_count": 1
+    }
+  ],
+  "updated_at": "2026-04-11T05:50:06.072204"
+}

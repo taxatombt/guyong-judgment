@@ -1,0 +1,251 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+feedback_system.py — 反馈系统 最小可用版
+
+核心问题：**外界给了什么反馈？反馈怎么进来更新记忆？**
+
+设计原则：
+- 从小处开始，只做核心：接收人类反馈 → 更新各层系统
+- 完整闭环：反馈 → 更新因果记忆 → 更新自我模型 → 更新情绪模式
+- 松耦合：不侵入前面模块，只做更新入口
+
+更新对象：
+1. 因果记忆：把反馈写回对应因果事件
+2. 自我模型：根据反馈更新已知偏差和优势统计
+3. 情感系统：根据反馈更新情绪信号模式（是不是真信号）
+"""
+
+from typing import List, Dict, Optional, Tuple
+from dataclasses import dataclass, field
+from datetime import datetime
+import json
+from pathlib import Path
+
+# 文件路径
+FEEDBACK_LOG_FILE = Path(__file__).parent.parent / "feedback_log.jsonl"
+
+
+@dataclass
+class Feedback:
+    """一条反馈"""
+    feedback_id: int
+    related_judgment_id: str      # 关联哪个判断
+    related_event_id: Optional[int] # 关联哪个因果事件
+    feedback_text: str             # 反馈内容
+    is_correct: Optional[bool]    # 之前判断正确吗？
+    created_at: str
+
+    def to_dict(self):
+        return {
+            "feedback_id": self.feedback_id,
+            "related_judgment_id": self.related_judgment_id,
+            "related_event_id": self.related_event_id,
+            "feedback_text": self.feedback_text,
+            "is_correct": self.is_correct,
+            "created_at": self.created_at,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)
+
+
+def _next_feedback_id() -> int:
+    """生成下一个反馈ID"""
+    all_feedback = load_all_feedback()
+    if not all_feedback:
+        return 1
+    max_id = max(f["feedback_id"] for f in all_feedback)
+    return max_id + 1
+
+
+def load_all_feedback() -> List[Dict]:
+    """加载所有反馈"""
+    if not FEEDBACK_LOG_FILE.exists():
+        return []
+    
+    feedback = []
+    with open(FEEDBACK_LOG_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                feedback.append(json.loads(line))
+            except:
+                continue
+    return feedback
+
+
+def save_feedback(feedback: Feedback):
+    """保存反馈到日志"""
+    with open(FEEDBACK_LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(json.dumps(feedback.to_dict(), ensure_ascii=False) + "\n")
+
+
+def add_feedback(
+    judgment_id: str,
+    event_id: Optional[int],
+    feedback_text: str,
+    is_correct: Optional[bool] = None,
+) -> Feedback:
+    """
+    添加一条反馈 → 自动更新所有相关系统：
+    - 保存反馈日志
+    - 更新因果记忆（给事件加上反馈）
+    - 更新自我模型（总结偏差）
+    - 更新情感系统（更新信号概率）
+    """
+    # 创建反馈对象
+    fb = Feedback(
+        feedback_id=_next_feedback_id(),
+        related_judgment_id=judgment_id,
+        related_event_id=event_id,
+        feedback_text=feedback_text,
+        is_correct=is_correct,
+        created_at=datetime.now().isoformat(),
+    )
+    save_feedback(fb)
+
+    # 更新因果记忆：把反馈写回对应事件
+    if event_id is not None:
+        update_causal_event_feedback(event_id, feedback_text)
+
+    # 更新自我模型：根据反馈总结偏差
+    update_self_model_from_feedback(fb)
+
+    # 如果反馈涉及情绪信号判断，更新情感系统
+    update_emotion_pattern_from_feedback(fb)
+
+    return fb
+
+
+def update_causal_event_feedback(event_id: int, feedback: str):
+    """更新因果事件里的反馈字段"""
+    from causal_memory import load_all_events
+    from pathlib import Path
+    
+    CAUSAL_EVENTS_FILE = Path(__file__).parent.parent / "causal_memory" / "causal_events.jsonl"
+    
+    events = load_all_events()
+    updated = False
+    
+    # 重写整个文件（简单可靠，数据量不大）
+    with open(CAUSAL_EVENTS_FILE, "w", encoding="utf-8") as f:
+        for event in events:
+            if event.get("event_id") == event_id:
+                event["feedback"] = feedback
+                updated = True
+            f.write(json.dumps(event, ensure_ascii=False) + "\n")
+    
+    return updated
+
+
+def update_self_model_from_feedback(feedback: Feedback):
+    """更新自我模型：从反馈中学习偏差"""
+    from self_model.self_model import update_from_feedback
+    return update_from_feedback(feedback.to_dict())
+
+
+def update_emotion_pattern_from_feedback(feedback: Feedback):
+    """更新情感系统：情绪信号是不是真的"""
+    # 如果反馈里提到了情绪，更新模式概率
+    text = feedback.feedback_text.lower()
+    is_signal = None
+    emotion_label = None
+
+    # 检测常见情绪词
+    emotion_keywords = {
+        "焦虑": "anxiety",
+        "担心": "anxiety", 
+        "兴奋": "excitement",
+        "愤怒": "anger",
+        "纠结": "uncertainty",
+        "后悔": "regret",
+    }
+
+    for kw, label in emotion_keywords.items():
+        if kw in text:
+            emotion_label = label
+            break
+
+    if emotion_label is None:
+        return False
+
+    # 判断反馈说"是信号"还是"不是信号"
+    if "是信号" in text or "确实" in text or "对的" in text:
+        is_signal = True
+    elif "不是" in text or "不对" in text or "错了" in text:
+        is_signal = False
+
+    if is_signal is not None:
+        from emotion_system.emotion_system import EmotionSystem
+        es = EmotionSystem()
+        es.update_pattern(emotion_label, is_signal)
+        return True
+
+    return False
+
+
+def format_recent_feedback(days: int = 7) -> str:
+    """格式化最近N天的反馈，人类可读"""
+    all_fb = load_all_feedback()
+    cutoff = datetime.now().timestamp() - days * 24 * 3600
+
+    recent = []
+    for fb in all_fb:
+        ts = datetime.fromisoformat(fb["created_at"]).timestamp()
+        if ts >= cutoff:
+            recent.append(fb)
+
+    if not recent:
+        return f"最近 {days} 天没有反馈记录。"
+
+    lines = [f"=== 最近 {days} 天反馈 ===\n"]
+    for idx, fb in enumerate(recent[-10:], 1):
+        correct = ""
+        if fb["is_correct"] is True:
+            correct = " [判断正确]"
+        elif fb["is_correct"] is False:
+            correct = " [判断错误]"
+        
+        lines.append(f"{idx}. {fb['feedback_text'][:60]}{correct}")
+        lines.append(f"   关联判断：{fb['related_judgment_id']}")
+    
+    return "\n".join(lines)
+
+
+def get_statistics() -> Dict:
+    """反馈统计"""
+    all_fb = load_all_feedback()
+    total = len(all_fb)
+    correct = sum(1 for f in all_fb if f["is_correct"] is True)
+    wrong = sum(1 for f in all_fb if f["is_correct"] is False)
+    
+    return {
+        "total": total,
+        "correct": correct,
+        "wrong": wrong,
+        "accuracy": correct / (correct + wrong) if (correct + wrong) > 0 else None,
+    }
+
+
+def format_statistics() -> str:
+    """格式化统计信息"""
+    stat = get_statistics()
+    lines = ["=== 反馈统计 ===\n"]
+    lines.append(f"总反馈：{stat['total']}")
+    if stat['accuracy'] is not None:
+        lines.append(f"判断正确率：{int(stat['accuracy'] * 100)}% ({stat['correct']}/{stat['correct'] + stat['wrong']})")
+    else:
+        lines.append("暂无对错标记")
+    return "\n".join(lines)
+
+
+# 测试
+if __name__ == "__main__":
+    print("反馈系统测试")
+    print(format_statistics())
+    print("\n最近7天反馈：")
+    print(format_recent_feedback(7))

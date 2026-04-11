@@ -1,0 +1,7 @@
+{"feedback_id": 1, "related_judgment_id": "test-20260411", "related_event_id": null, "feedback_text": "这次焦虑提示是对的，确实有风险", "is_correct": null, "created_at": "2026-04-11T01:01:57.293596"}
+{"feedback_id": 2, "related_judgment_id": "test-20260411", "related_event_id": null, "feedback_text": "这次焦虑提示是对的，确实有风险", "is_correct": null, "created_at": "2026-04-11T01:02:16.568789"}
+{"feedback_id": 3, "related_judgment_id": "test-20260411", "related_event_id": null, "feedback_text": "这次焦虑提示是对的，确实有风险", "is_correct": null, "created_at": "2026-04-11T01:02:29.391617"}
+{"feedback_id": 4, "related_judgment_id": "test-20260411-emotion", "related_event_id": null, "feedback_text": "焦虑，这次焦虑确实是信号，是对的", "is_correct": true, "created_at": "2026-04-11T01:02:52.635357"}
+{"feedback_id": 5, "related_judgment_id": "fe750e5986bd", "related_event_id": 15, "feedback_text": "集成测试全部通过，架构设计合理，导入路径修复正确", "is_correct": true, "created_at": "2026-04-11T05:49:29.067089"}
+{"feedback_id": 6, "related_judgment_id": "fe750e5986bd", "related_event_id": 16, "feedback_text": "集成测试全部通过，架构设计合理，导入路径修复正确", "is_correct": true, "created_at": "2026-04-11T05:49:41.181160"}
+{"feedback_id": 7, "related_judgment_id": "fe750e5986bd", "related_event_id": 17, "feedback_text": "集成测试全部通过，架构设计合理，导入路径修复正确", "is_correct": true, "created_at": "2026-04-11T05:50:06.154258"}

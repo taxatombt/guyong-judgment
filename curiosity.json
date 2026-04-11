@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "question": "MAGMA的图遍历具体怎么实现高效相似搜索？",
+    "topic": "guyong-juhuo 因果记忆",
+    "trigger": {
+      "trigger_type": "gap",
+      "description": "知道需要相似搜索，但不知道MAGMA具体实现细节"
+    },
+    "priority_level": 3,
+    "aligned_to_long_term": true,
+    "serves_current_task": "实现因果记忆快慢双流",
+    "created_at": "2026-04-10T22:48:54.951776",
+    "status": "open",
+    "resolved_answer": null
+  },
+  {
+    "id": 3,
+    "question": "这篇新的自进化Agent文章对我有什么启发？",
+    "topic": "数字永生 Agent框架",
+    "trigger": {
+      "trigger_type": "relevance",
+      "description": "看到新出的框架，和我们的长期方向相关"
+    },
+    "priority_level": 3,
+    "aligned_to_long_term": true,
+    "serves_current_task": null,
+    "created_at": "2026-04-10T22:48:54.953774",
+    "status": "open",
+    "resolved_answer": null
+  },
+  {
+    "id": 4,
+    "question": "为什么guyong-juhuo架构设计这么清爽?",
+    "topic": "guyong-juhuo 架构设计",
+    "trigger": {
+      "trigger_type": "relevance",
+      "description": "架构设计和依赖顺序非常清爽，值得探索为什么"
+    },
+    "priority_level": 3,
+    "aligned_to_long_term": true,
+    "serves_current_task": "集成测试",
+    "created_at": "2026-04-11T05:47:19.125261",
+    "status": "open",
+    "resolved_answer": null
+  },
+  {
+    "id": 2,
+    "question": "为什么在推送 guyong-juhuo 代码下，预期GitHub推送成功但是实际连接重置超时？",
+    "topic": "推送 guyong-juhuo 代码",
+    "trigger": {
+      "trigger_type": "anomaly",
+      "description": "预期结果与实际不符: 预期 GitHub推送成功, 实际 连接重置超时"
+    },
+    "priority_level": 2,
+    "aligned_to_long_term": false,
+    "serves_current_task": "完善好奇心引擎",
+    "created_at": "2026-04-10T22:48:54.952774",
+    "status": "open",
+    "resolved_answer": null
+  }
+]

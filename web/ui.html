@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>guyong</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;510;590&display=swap');
+body{font-family:Inter,-apple-system,system-ui,sans-serif;background:#08090a;color:#f7f8f8;font-size:15px;line-height:1.5;margin:0}
+.c{margin:0 auto;max-width:960px;padding:2rem 1.5rem 5rem}
+.hh{display:flex;align-items:center;gap:0.75rem;padding-bottom:1.5rem;margin-bottom:2rem;border-bottom:1px solid rgba(255,255,255,0.05)}
+.hh h1{font-size:1.1rem;font-weight:590}
+.tag{font-size:0.68rem;font-weight:590;padding:0.2rem 0.6rem;border-radius:9999px;background:rgba(113,112,255,0.12);color:#7170ff;border:1px solid rgba(113,112,255,0.2)}
+.stats{margin-left:auto;color:#8a8f98;font-size:0.8rem}
+.stats span{color:#f7f8f8;font-weight:590}
+.card{background:#191a1b;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+.ct{font-size:0.72rem;font-weight:590;color:#8a8f98;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem}
+textarea,input{width:100%;background:#0f1011;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#f7f8f8;font-size:0.9rem;padding:0.7rem;outline:none;font-family:inherit}
+textarea:focus,input:focus{border-color:#7170ff}
+textarea{resize:vertical;min-height:88px}
+.br{display:flex;gap:0.5rem;margin-top:0.85rem}
+.btn{padding:0.55rem 1.3rem;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#d0d6e0;font-size:0.82rem;font-weight:510;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(255,255,255,0.08);color:#f7f8f8}
+.btn.p{background:#5e6ad2;border-color:#5e6ad2;color:#fff}
+.btn.p:hover{background:#7170ff}
+.cx{display:inline-block;padding:0.25rem 0.75rem;border-radius:4px;font-size:0.75rem;font-weight:590;margin-bottom:1rem}
+.cx.s{background:rgba(16,185,129,0.12);color:#10b981}
+.cx.c{background:rgba(210,153,34,0.12);color:#d29922}
+.cx.x{background:rgba(248,81,73,0.12);color:#f85149}
+.dc{background:#191a1b;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.9rem 1.1rem;margin-bottom:0.6rem;opacity:0;animation:fi 0.3s ease forwards}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.dc .n{font-size:0.7rem;font-weight:590;color:#8a8f98;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.5rem}
+.dc .br{display:flex;align-items:center;gap:0.6rem}
+.dc .bw{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.dc .ba{height:100%;border-radius:2px;transition:width 0.5s ease}
+.dc .sc{font-size:0.8rem;font-weight:590;min-width:32px;text-align:right}
+.dc .tl{font-size:0.72rem;color:#62666d;margin-top:0.35rem}
+.dc .su{font-size:0.75rem;color:#62666d;margin-top:0.3rem}
+.bg{display:inline-block;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.68rem;font-weight:590}
+.hi{background:rgba(248,81,73,0.15);color:#f85149}
+.me{background:rgba(210,153,34,0.15);color:#d29922}
+.lo{background:rgba(16,185,129,0.15);color:#10b981}
+.gr{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.6rem;margin-top:1rem}
+#ld{display:none;text-align:center;padding:2rem}
+.do{display:inline-block;width:6px;height:6px;border-radius:50%;background:#7170ff;margin:0 3px;animation:bl 1.2s infinite}
+@keyframes bl{0%,100%{opacity:0.3}50%{opacity:1}}
+</style>
+</head>
+<body>
+<div class="c">
+  <div class="hh">
+    <h1>guyong-juhuo</h1>
+    <span class="tag">v1</span>
+    <div class="stats"><span>10</span> 维度</div>
+  </div>
+  <div class="card">
+    <div class="ct">决策场景</div>
+    <textarea id="tk" placeholder="描述一个需要判断的情境..."></textarea>
+    <div class="br">
+      <button class="btn p" id="go" onclick="go()">开始分析</button>
+      <button class="btn" onclick="st()">流式分析</button>
+    </div>
+  </div>
+  <div class="card" id="ra" style="display:none">
+    <div id="meta"></div>
+    <div id="cx"></div>
+    <svg id="radar" viewBox="0 0 400 400" style="width:100%;max-width:360px;margin:1rem auto;display:block"></svg>
+    <div class="gr" id="cards"></div>
+  </div>
+  <div id="ld"><span class="do"></span><span class="do"></span><span class="do"></span></div>
+</div>
+<script>
+var D=[{n:'cog',l:'认知',c:'#5e6ad2'},{n:'game',l:'博弈',c:'#10b981'},{n:'econ',l:'经济',c:'#d29922'},{n:'dialectic',l:'辩证',c:'#f85149'},{n:'emotion',l:'情绪',c:'#db61a2'},{n:'intuition',l:'直觉',c:'#79c0ff'},{n:'moral',l:'道德',c:'#7ee787'},{n:'social',l:'社会',c:'#ffa657'},{n:'time',l:'时间',c:'#ff7b72'},{n:'meta',l:'元认知',c:'#d2a8ff'}];
+function g(id){return document.getElementById(id)}
+function go(){var t=g('tk').value.trim();if(!t)return;g('ra').style.display='block';g('ld').style.display='block';fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:t})}).then(function(r){return r.json()}).then(function(d){g('ld').style.display='none';render(d)}).catch(function(e){g('ld').style.display='none';console.error(e)})}
+function st(){var t=g('tk').value.trim();if(!t)return;g('ra').style.display='block';g('ld').style.display='block';g('cards').innerHTML='';D.forEach(function(d2){var c=document.createElement('div');c.className='dc';c.innerHTML="<div class=n>"+d2.l+"</div><div class=br><div class=bw><div class=ba id=b-"+d2.n+" style='width:0%;background:"+d2.c+"'></div></div><span class=sc id=s-"+d2.n+">--</span></div><div class=tl id=t-"+d2.n+"></div><div class=su id=u-"+d2.n+"></div>";g('cards').appendChild(c);setTimeout(function(){c.style.opacity='1'})});fetch('/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:t})}).then(function(r){var reader=r.body.getReader();var decoder=new TextDecoder();var buf='';function next(){reader.read().then(function(result){if(result.done)return;buf+=decoder.decode(result.value,{stream:true});var lines=buf.split('\n');buf=lines.pop();lines.forEach(function(line){if(line.startsWith('data:')){try{var d2=JSON.parse(line.slice(5));updateDim(d2)}catch(e){}}});next()})}next()}).catch(function(e){g('ld').style.display='none';console.error(e)})}
+function updateDim(d2){var bEl=g('b-'+d2.dim);var sEl=g('s-'+d2.dim);var tEl=g('t-'+d2.dim);var uEl=g('u-'+d2.dim);if(bEl){bEl.style.width=(d2.score*10)+'%'}if(sEl){sEl.textContent=d2.score.toFixed(1)}if(tEl){tEl.textContent=d2.label||''}if(uEl){uEl.textContent=d2.desc||''}}
+function render(d){g('meta').innerHTML="<div style='font-size:0.8rem;color:#8a8f98;margin-bottom:0.5rem'>"+d.task+"</div>";var cxEl=g('cx');var cls='cx '+(d.complexity==='simple'?'s':d.complexity==='complex'?'x':'c');cxEl.innerHTML="<span class='"+cls+"'>"+d.complexity+"</span>";while(g('cards').firstChild)g('cards').removeChild(g('cards').firstChild);D.forEach(function(d2,i){var found=d.dims[d2.n];if(!found)return;var c=document.createElement('div');c.className='dc';var badgeCls=found.score>=7?'hi':found.score>=4?'me':'lo';var badgeTxt=found.score>=7?'高':found.score>=4?'中':'低';c.innerHTML="<div class=n>"+d2.l+" <span class='bg "+badgeCls+"'>"+badgeTxt+"</span></div><div class=br><div class=bw><div class=ba style='width:"+(found.score*10)+"%;background:"+d2.c+"'></div></div><span class=sc>"+found.score.toFixed(1)+"</span></div><div class=tl>"+found.label+"</div><div class=su>"+found.reason+"</div>";g('cards').appendChild(c);setTimeout(function(){c.style.opacity='1'},i*80)});drawRadar(d.dims)}
+function drawRadar(dims){var svg=g('radar');svg.innerHTML='';var cx=200,cy=200,r=150;var N=D.length;var points=[];D.forEach(function(d2,i){var v=dims[d2.n]?dims[d2.n].score/10:0;var angle=(Math.PI*2*i/N)-Math.PI/2;var x=cx+r*v*Math.cos(angle);var y=cy+r*v*Math.sin(angle);points.push(x+','+y)});var poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');poly.setAttribute('points',points.join(' '));poly.setAttribute('fill','rgba(94,106,210,0.15)');poly.setAttribute('stroke','rgba(94,106,210,0.6)');poly.setAttribute('stroke-width','1.5');svg.appendChild(poly);D.forEach(function(d2,i){var angle=(Math.PI*2*i/N)-Math.PI/2;var x2=cx+(r+15)*Math.cos(angle);var y2=cy+(r+15)*Math.sin(angle);var label=document.createElementNS('http://www.w3.org/2000/svg','text');label.setAttribute('x',x2);label.setAttribute('y',y2);label.setAttribute('text-anchor','middle');label.setAttribute('dominant-baseline','middle');label.setAttribute('fill','#8a8f98');label.setAttribute('font-size','11');label.setAttribute('font-family','Inter,sans-serif');label.textContent=d2.l;svg.appendChild(label);var cLine=document.createElementNS('http://www.w3.org/2000/svg','line');cLine.setAttribute('x1',cx);cLine.setAttribute('y1',cy);cLine.setAttribute('x2',cx+r*Math.cos(angle));cLine.setAttribute('y2',cy+r*Math.sin(angle));cLine.setAttribute('stroke','rgba(255,255,255,0.06)');cLine.setAttribute('stroke-width','1');svg.appendChild(cLine)});for(var j=3;j<=10;j+=3.5){var jR=r*(j/10);var jPoints=[];D.forEach(function(d2,i){var angle=(Math.PI*2*i/N)-Math.PI/2;jPoints.push((cx+jR*Math.cos(angle))+','+(cy+jR*Math.sin(angle)))});var jPoly=document.createElementNS('http://www.w3.org/2000/svg','polygon');jPoly.setAttribute('points',jPoints.join(' '));jPoly.setAttribute('fill','none');jPoly.setAttribute('stroke','rgba(255,255,255,0.05)');jPoly.setAttribute('stroke-width','1');svg.appendChild(jPoly)}};
+if(location.hash==='#demo'){g('tk').value='你的朋友向你借一笔较大的钱，说下个月还，但你知道他之前有多次借钱不还的记录。';setTimeout(function(){go()},500)}
+</script>
+</body>
+</html>

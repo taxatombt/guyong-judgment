@@ -1,0 +1,6 @@
+﻿# Optional dependencies for 4D Judgment Framework
+# Core functionality works without any dependencies.
+# Install only if you need extras:
+
+# evolver integration (for recording judgments)
+# evolver >= 1.0
