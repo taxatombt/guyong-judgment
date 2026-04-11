@@ -31,10 +31,10 @@ Usage:
     from judgment.embedding_match import find_similar_decisions
 """
 
-from .judgment_path import JudgmentPath
-from .dimensions import DIMENSIONS
+from judgment.judgment_path import JudgmentPath
+from judgment.dimensions import DIMENSIONS
 from .paths import PATHS
-from .router import (
+from judgment.router import (
     check10d,
     check10d_run,
     route,
@@ -43,7 +43,7 @@ from .router import (
 )
 
 # 新增模块
-from .confidence import (
+from judgment.confidence import (
     ConfidenceScore,
     assess_dimension_confidence,
     assess_all_confidences,
@@ -72,7 +72,7 @@ from .adversarial import (
     quick_validate,
 )
 
-from .dynamic_weights import (
+from judgment.dynamic_weights import (
     WeightConfig,
     get_dynamic_weights,
     get_task_complexity,
@@ -153,7 +153,7 @@ from .recursive_trigger import (
 )
 
 # #2 元认知
-from .metacognitive import (
+from judgment.metacognitive import (
     metacognitive_review,
     metacognitive_self_check,
     get_bias_checklist,

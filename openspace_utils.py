@@ -37,9 +37,14 @@ def generate_skill_id(skill_name: str, fix_version: int, content: str) -> str:
     Example:
       systematic-debugging__v2_8a3b2f1c
     """
+    # 修复bug：skill_name 为空/全空白/全横线 → 使用默认名称避免生成一堆横线开头的奇怪目录
+    cleaned_name = (skill_name or "").strip("- \t\n\r")
+    if not cleaned_name:
+        cleaned_name = "unnamed_skill"
+    
     # 计算内容 hash (前 8 位足够)
     content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()[:8]
-    return f"{skill_name}__v{fix_version}_{content_hash}"
+    return f"{cleaned_name}__v{fix_version}_{content_hash}"
 
 
 def read_skill_id(skill_dir: Path) -> Optional[str]:
@@ -77,12 +82,18 @@ def get_or_generate_skill_id(
     existing = read_skill_id(skill_dir)
     if existing:
         return existing
+    
+    # 修复bug：skill_name 为空/全空白/全横线 → 用默认名称
+    cleaned_name = (skill_name or "").strip("- \t\n\r")
+    if not cleaned_name:
+        cleaned_name = "unnamed_skill"
+    
     if not content:
         # If no content provided, generate hash from skill name
-        content_hash = hashlib.sha256(skill_name.encode("utf-8")).hexdigest()[:8]
-        new_id = f"{skill_name}__v{fix_version}_{content_hash}"
+        content_hash = hashlib.sha256(cleaned_name.encode("utf-8")).hexdigest()[:8]
+        new_id = f"{cleaned_name}__v{fix_version}_{content_hash}"
     else:
-        new_id = generate_skill_id(skill_name, fix_version, content)
+        new_id = generate_skill_id(cleaned_name, fix_version, content)
     write_skill_id(skill_dir, new_id)
     return new_id
 

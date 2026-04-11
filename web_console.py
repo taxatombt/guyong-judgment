@@ -115,25 +115,25 @@ INDEX_HTML = """
                 extend: {
                     colors: {
                         base: {
-                            900: '#f8f5f3',
-                            800: '#f0ebe8',
-                            700: '#e8e0dc',
-                            600: '#d6c8c3',
-                            500: '#bfa8a3',
-                            400: '#a68f8a',
-                            300: '#8d7570',
+                            900: '#fbf6f4',
+                            800: '#f3eeeb',
+                            700: '#ebe5e1',
+                            600: '#ded0cc',
+                            500: '#c9b0aa',
+                            400: '#b89a93',
+                            300: '#a07f7a',
                         },
                         accent: {
-                            DEFAULT: '#b76e63',     /* 莫兰迪低饱和红棕色，非常低饱和 */
-                            hover: '#a55d52',
+                            DEFAULT: '#aa4c42',     /* 红色更纯正，饱和度更低 */
+                            hover: '#993d33',
                         },
-                        success: '#8aa88f',
-                        warning: '#c9a382',
-                        danger: '#b76e63',
+                        success: '#88a68d',
+                        warning: '#c29e7d',
+                        danger: '#aa4c42',
                         text: {
-                            DEFAULT: '#2d2a28',
-                            muted: '#645e5c',
-                            light: '#8a8380',
+                            DEFAULT: '#2b2625',
+                            muted: '#635c5a',
+                            light: '#887f7c',
                         }
                     },
                     fontFamily: {
@@ -161,69 +161,69 @@ INDEX_HTML = """
         }
         
         body {
-            background: radial-gradient(ellipse at top, #f5ebe8 0%, #e6ddd9 100%);
+            background: radial-gradient(ellipse at top, #f8f0ed 0%, #ede2dd 100%);
             font-family: 'Outfit', system-ui, -apple-system, sans-serif;
         }
         
-        /* Glassmorphism - 莫兰迪低饱和红棕 */
+        /* Glassmorphism - 更低饱和纯正红 */
         .glass {
             background: rgba(255, 255, 255, 0.55);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(183, 110, 99, 0.18);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 8px 32px rgba(140, 80, 70, 0.10);
+            border: 1px solid rgba(170, 76, 66, 0.15);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 8px 32px rgba(130, 60, 50, 0.08);
         }
         
         .glass-card {
             background: rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(183, 110, 99, 0.12);
+            border: 1px solid rgba(170, 76, 66, 0.10);
             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         .glass-card:hover {
             background: rgba(255, 255, 255, 0.65);
-            border-color: rgba(183, 110, 99, 0.30);
+            border-color: rgba(170, 76, 66, 0.25);
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(183, 110, 99, 0.10);
+            box-shadow: 0 6px 20px rgba(170, 76, 66, 0.08);
         }
         
         .glass-card.active {
-            background: rgba(183, 110, 99, 0.18);
-            border-color: rgba(183, 110, 99, 0.45);
-            box-shadow: 0 8px 24px rgba(183, 110, 99, 0.15);
+            background: rgba(170, 76, 66, 0.15);
+            border-color: rgba(170, 76, 66, 0.40);
+            box-shadow: 0 8px 24px rgba(170, 76, 66, 0.12);
         }
         
-        /* Scrollbar styling - 莫兰迪低饱和红棕 */
+        /* Scrollbar styling - 更低饱和纯正红 */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(183, 110, 99, 0.06);
+            background: rgba(170, 76, 66, 0.05);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(183, 110, 99, 0.20);
+            background: rgba(170, 76, 66, 0.18);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(183, 110, 99, 0.35);
+            background: rgba(170, 76, 66, 0.30);
         }
         
-        /* Message bubbles - 莫兰迪低饱和红棕 */
+        /* Message bubbles - 更低饱和纯正红 */
         .message-user {
-            background: linear-gradient(135deg, rgba(183, 110, 99, 0.25), rgba(183, 110, 99, 0.06));
-            border: 1px solid rgba(183, 110, 99, 0.30);
+            background: linear-gradient(135deg, rgba(170, 76, 66, 0.22), rgba(170, 76, 66, 0.05));
+            border: 1px solid rgba(170, 76, 66, 0.28);
         }
         .message-assistant {
             background: rgba(255, 255, 255, 0.45);
-            border: 1px solid rgba(183, 110, 99, 0.12);
+            border: 1px solid rgba(170, 76, 66, 0.10);
         }
         .message-system {
-            background: rgba(183, 110, 99, 0.12);
-            border: 1px solid rgba(183, 110, 99, 0.25);
+            background: rgba(170, 76, 66, 0.10);
+            border: 1px solid rgba(170, 76, 66, 0.22);
         }
         
         /* Button hover animation */
@@ -627,8 +627,21 @@ INDEX_HTML += """
         </div>
         <!-- 动态生成模块按钮 -->
         <div id="module-buttons">
-            <!-- JS 填充 -->
+            <!-- JS 填充核心模块 -->
         </div>
+        <!-- 额外功能按钮 -->
+        <button class="module-btn" onclick="loadModule('chat')">
+            <div><b>💬 对话聊天</b></div>
+            <div class="desc">自动全流程聊天对话</div>
+        </button>
+        <button class="module-btn" onclick="loadModule('llm_config')">
+            <div><b>🔌 大模型配置</b></div>
+            <div class="desc">网页图形化配置大模型</div>
+        </button>
+        <button class="module-btn" onclick="loadModule('export_chat')">
+            <div><b>📝 导出会话</b></div>
+            <div class="desc">导出对话为Markdown</div>
+        </button>
         <div class="sidebar-footer">
             聚活 / guyong-juhuo<br>
             记住你的一切，代替你永远活下去

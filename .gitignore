@@ -1,2 +1,36 @@
-__pycache__  
-"*.pyc"  
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info
+.installed.cfg
+
+# OpenSpace skills
+.skills-db.json
+skills/**/.skill_id
+
+# data
+chat_history/
+evolution_suggestions/
+exports/
+action_log.jsonl
+feedback_log.jsonl
+emotion_log.jsonl
+*.log
+
+# config
+config.json
+local/

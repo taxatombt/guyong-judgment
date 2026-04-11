@@ -52,7 +52,7 @@ from output_system.output_system import OutputSystem
 print('[OK] output_system.output_system OK (输出时机决策算法)')
 
 # 十维判断
-from router import check10d
+from judgment.router import check10d
 print('[OK] judgment.router OK (十维独立打分 + 权重校准)')
 
 print()

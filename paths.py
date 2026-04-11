@@ -4,7 +4,7 @@ paths.py — 判断路径触发
 十维框架：认知 × 博弈 × 经济 × 辩证 × 情绪 × 直觉 × 道德 × 社会 × 时间 × 元认知
 """
 
-from judgment_path import JudgmentPath
+from judgment.judgment_path import JudgmentPath
 
 PATHS = [
     JudgmentPath(

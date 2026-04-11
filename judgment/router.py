@@ -21,7 +21,7 @@ router.py — 十维判断框架核心路由
 import re
 import asyncio
 from paths import PATHS
-from dimensions import DIMENSIONS
+from judgment.dimensions import DIMENSIONS
 from causal_memory import recall_causal_history, inject_to_judgment_input, find_similar_events, init
 
 # 初始化
@@ -29,7 +29,7 @@ init()
 
 # 兼容旧接口命名
 causal_memory = type('obj', (object,), {
-    'recall_causal_history': lambda task, max_events=3: recall_causal_history(task, max_events),
+    'recall_causal_history': lambda task, max_events=3: recall_causal_history(max_events, task),
     'inject_to_judgment_input': inject_to_judgment_input
 })()
 from self_model.self_model import get_self_warnings
@@ -172,7 +172,7 @@ def check10d(task_text, agent_profile=None, complexity="auto"):
     })
 
     # 好奇心引擎：低置信度自动触发缺口收集
-    from confidence import calculate_average_confidence
+    from .confidence import calculate_average_confidence
     avg_confidence = 0.5
     dim_confidence = {}
     if 'dim_confidence' in locals():
@@ -180,7 +180,7 @@ def check10d(task_text, agent_profile=None, complexity="auto"):
     
     curiosity_item = None
     if avg_confidence < 0.5 and avg_confidence > 0:
-        from curiosity.curiosity_engine import trigger_from_low_confidence
+        from ..curiosity.curiosity_engine import trigger_from_low_confidence
         curiosity_item = trigger_from_low_confidence({
             "original_task": original_task,
             "average_confidence": avg_confidence,
