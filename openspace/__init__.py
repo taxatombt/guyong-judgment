@@ -50,7 +50,12 @@ openspace —— HKUDS/OpenSpace AI Agent 自我进化引擎整合
   )
 """
 
-from ..openspace_evolution import (
+import sys
+import os
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from openspace_evolution import (
     EvolutionType,
     SkillLineage,
     SkillMetrics,
@@ -73,7 +78,7 @@ from ..openspace_evolution import (
     SKILL_DB_PATH,
 )
 
-from ..openspace_utils import (
+from openspace_utils import (
     generate_skill_id,
     read_skill_id,
     write_skill_id,
@@ -90,7 +95,7 @@ from ..openspace_utils import (
     get_implementation_summary,
 )
 
-from ..execution_analyzer import (
+from execution_analyzer import (
     ExecutionAnalyzer,
     ExecutionRecord,
 )

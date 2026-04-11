@@ -3,7 +3,7 @@
 """
 attention_filter.py — 注意力过滤器（信息接收系统核心）
 
-定义：谷翔宇主动关注什么、被动接收什么、对什么信息敏感、忽略什么。
+定义：聚活主动关注什么、被动接收什么、对什么信息敏感、忽略什么。
 遵循底座顺序：信息接收 → 判断 → 因果记忆 → 自我模型
 
 结构：
@@ -48,14 +48,14 @@ class FilterResult:
 
 
 class AttentionFilter:
-    """谷翔宇的注意力过滤器"""
+    """聚活的注意力过滤器 — 默认关注关键词配置"""
 
     def __init__(self):
         self.active_filters: List[AttentionItem] = []
         self._init_default_filters()
 
     def _init_default_filters(self):
-        """初始化谷翔宇默认关注列表"""
+        """初始化默认关注列表"""
         # 项目类（最高优先级）
         defaults = [
             # 自身项目
@@ -75,9 +75,8 @@ class AttentionFilter:
             ("数字永生", "keyword", 5),
             ("十维判断", "keyword", 4),
             ("超越人类", "keyword", 5),
-            # 人际
-            ("顾庸", "person", 5),
-            ("谷翔宇", "person", 5),
+            # 聚活项目本身
+            ("聚活", "project", 5),
         ]
 
         for kw, cat, prio in defaults:

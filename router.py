@@ -56,7 +56,7 @@ def inject_emotion_signal(task_text: str) -> str:
     return None
 
 # 维度优先级分类
-# 优先级原则（来自顾庸a反馈）：
+# 优先级原则（聚活项目设计）：
 # - game_theory / emotional 永远必检（人类最常踩这俩坑）
 # - economic / cognitive 基础维度
 MUST_CHECK = ["game_theory", "emotional", "cognitive", "economic"]

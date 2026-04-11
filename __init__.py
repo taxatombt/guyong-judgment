@@ -1,8 +1,8 @@
 """
-guyong-juhuo — 模拟具体个体、超越人类的 Agent
+guyong-juhuo — 聚活：模拟具体个体、持续自我进化的 Agent
 
 判断系统（judgment）是核心子系统之一，负责"遇到两难怎么想"。
-整体定位：在大模型基础上，模拟谷翔宇（顾庸），持续学习，超越人类。
+整体定位：在大模型基础上，模拟特定个体，持续学习，最终超越人类整体。
 
 7大进化功能：
 1. 置信度量化 — 解决"不知道自己不知道"
@@ -349,4 +349,19 @@ __all__ = [
     "format_recent_feedback",
     "get_statistics",
     "format_statistics",
+
+    # 感知层（输入层）
+    "perception",
+    "AttentionFilter",
+    "AttentionItem",
+    "IncomingMessage",
+    "FilterResult",
+    "PDFExtractorAdapter",
+    "PDFBlock",
+    "ExtractedPDF",
+    "extract_pdf_to_judgment_input",
+    "WebExtractorAdapter",
+    "WebBlock",
+    "ExtractedWeb",
+    "extract_web_to_judgment_input",
 ]
