@@ -1,23 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-curiosity_engine.py — 好奇心引擎 最小可用版
+curiosity_engine.py — 聚活好奇心引擎
+**独特核心技术（聚活独有）：锁定兴趣域的双随机游走**
 
-设计来源：聚活项目
-核心：碰到新信息时检测好奇 + 排序，不用主动爬，先把触发和排序跑通
+普通AI好奇心会瞎探索什么都感兴趣，聚活不是：
+1. **锁定兴趣域**：只探索符合你锁定兴趣方向的话题，不跑题
+   - 你的兴趣列表永久锁定（核心身份锁），可以手动修改但不能自动修改
+   - 不符合锁定域的话题直接过滤，不消耗认知资源
 
-触发点三个，按顺序：
-  ① 知识缺口触发 → 判断置信度低，现有知识不足以判断
-  ② 未知异常触发 → 因果不匹配，预期和实际不符
-  ③ 价值相关性触发 → 新话题和长期目标/当前任务沾边
+2. **双随机游走**：
+   - **目标导向游走**：80%概率走"对齐长期目标→服务当前任务→知识缺口→延伸"路径
+     → 跟着目标走，大部分探索对当前系统有用
+   - **自由随机游走**：20%概率走随机步，在锁定域内随便跳
+     → 保留意外发现惊喜（serendipity），不完全功利，保持创造力
 
-优先级规则三条：
-  1. 对齐长期目标（guyong-juhuo 本身）→ 最高
-  2. 服务当前任务 → 第二
-  3. 留随机位置 → 每天一个纯粹"觉得有意思"的好奇，给serendipity，不完全功利
+3. **三触发机制（聚活适配）：**
+   ① 知识缺口触发 → 判断置信度低，现有知识不足以判断
+   ② 未知异常触发 → 因果不匹配，预期和实际不符
+   ③ 价值相关性触发 → 新话题和长期目标/锁定兴趣沾边
 
-输出：每日结束输出「今日好奇清单」，前三高优先级，一定留一个随机位
+优先级排序（聚活规则）：
+  1. 对齐长期目标 → 最高优先级
+  2. 服务当前任务 → 第二优先级
+  3. 锁定兴趣域自由游走 → 低优先级但每日必占一位
+  4. 完全无关 → 过滤掉
+
+输出：每日结束输出「今日好奇清单」，前三高优先级，一定留一个自由随机位
 """
+
+# 锁定兴趣域是聚活好奇心和通用AI好奇心最大区别
+# 你永远只探索你真正感兴趣的方向，不会被热点带偏，不会浪费时间
 
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass, field
@@ -28,14 +41,98 @@ from pathlib import Path
 # 文件路径
 CURIOSITY_FILE = Path(__file__).parent.parent / "curiosity.json"
 GOALS_FILE = Path(__file__).parent.parent / "goal_system" / "goals.json"
+LOCKED_INTERESTS_FILE = Path(__file__).parent / "locked_interests.json"
+
+# 双随机游走概率
+WALK_TARGET_GUIDED_RATE = 0.8  # 80%目标导向，20%自由随机
+SIMILARITY_THRESHOLD = 0.3  # 低于这个相似度进锁定域
 
 # 使用目标系统计算对齐得分
+import random
+import difflib
+from typing import List
+
+# 锁定兴趣域是聚活独特：只读，不能自动修改（身份锁）
 from goal_system.goal_system import get_goal_system
+
+def _load_locked_interests() -> List[str]:
+    """
+    聚活独特技术：锁定兴趣域，加载锁定兴趣列表
+    锁定兴趣域不会自动进化，必须手动修改 → 你的兴趣永远是你的兴趣
+    """
+    if not LOCKED_INTERESTS_FILE.exists():
+        # 初始化默认锁定兴趣（根据聚活项目本身设置）
+        default_interests = [
+            "AI Agent", "self-evolution", "personal digital clone", "digital immortality",
+            "认知科学", "心理学", "决策科学", "哲学", "科幻小说写作", "诗歌",
+            "FPS游戏", "狼人杀", "编程", "设计方法论", "CoPaw开发"
+        ]
+        with open(LOCKED_INTERESTS_FILE, "w", encoding="utf-8") as f:
+            json.dump(default_interests, f, ensure_ascii=False, indent=2)
+        return default_interests
+    
+    with open(LOCKED_INTERESTS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def is_in_locked_domain(topic: str) -> bool:
+    """
+    聚活独特技术：判断话题是否在锁定兴趣域
+    只要匹配到任何一个锁定兴趣相似度够高，就算在域内
+    """
+    locked = _load_locked_interests()
+    for interest in locked:
+        sim = difflib.SequenceMatcher(None, topic.lower(), interest.lower()).ratio()
+        if sim >= SIMILARITY_THRESHOLD:
+            return True
+    return False
+
+
+def max_locked_similarity(topic: str) -> float:
+    """返回话题和锁定兴趣域的最大相似度"""
+    locked = _load_locked_interests()
+    return max(
+        difflib.SequenceMatcher(None, topic.lower(), interest.lower()).ratio()
+        for interest in locked
+    )
+
+
+def sample_random_interest_in_domain() -> str:
+    """
+    聚活独特技术：双随机游走 → 自由随机游走从锁定域采样一个随机兴趣
+    """
+    locked = _load_locked_interests()
+    return random.choice(locked)
+
+
+def pick_next_exploration_topic(current_topic: str) -> Tuple[str, str]:
+    """
+    聚活独特技术：双随机游走 → 选择下一个探索主题
+    Returns:
+        (topic, walk_type) where walk_type = "target_guided" or "free_random"
+    """
+    if random.random() < WALK_TARGET_GUIDED_RATE:
+        # 目标导向游走 → 找和当前话题最接近的锁定兴趣
+        locked = _load_locked_interests()
+        best = max(locked, key=lambda x: difflib.SequenceMatcher(None, current_topic.lower(), x.lower()).ratio())
+        return (best, "target_guided")
+    else:
+        # 自由随机游走 → 在锁定域内随机选一个
+        return (sample_random_interest_in_domain(), "free_random")
+
 
 def calculate_alignment_score(topic: str) -> float:
     """计算话题和长期目标的对齐得分（0-1）"""
+    # 先检查锁定域内话题本身就是对齐长期目标（因为锁定就是你选的）
+    in_domain = is_in_locked_domain(topic)
+    if not in_domain:
+        return 0.0  # 域外话题直接零分，不探索
+    
+    # 再计算和当前目标对齐
     gs = get_goal_system()
-    return gs.calculate_alignment_score(topic)
+    base_score = gs.calculate_alignment_score(topic)
+    # 锁定域加成
+    return min(base_score + 0.2, 1.0)  # 锁定域话题本身加分
 
 
 # 优先级等级
@@ -171,11 +268,17 @@ class CuriosityEngine:
         return max(item.id for item in self.items) + 1
 
     def _calculate_priority(self, topic: str, aligned_to_long_term: bool, serves_current_task: Optional[str]) -> int:
-        """按三条规则计算优先级
-        1. 对齐长期目标 → HIGH
-        2. 服务当前任务 → MEDIUM
-        3. 其他 → LOW（留给随机好奇位）
         """
+        聚活独特优先级计算（锁定兴趣域）：
+        1. **域外话题直接拒绝探索** → 优先级0（不收录）
+        2. 锁定域内：对齐长期目标 → HIGH
+        3. 锁定域内：服务当前任务 → MEDIUM
+        4. 锁定域内：自由随机 → LOW（每天必留一个位置）
+        """
+        # 聚活独特：域外话题直接零分，不探索，不浪费认知资源
+        if not is_in_locked_domain(topic):
+            return 0  # 0 → 不收录
+        
         # 用目标系统再算一遍对齐得分，再确认
         score = calculate_alignment_score(topic)
         if score >= 0.5:
@@ -466,6 +569,26 @@ def trigger_from_causal_mismatch(context: str, expected: str, actual: str, curre
         context=context,
         current_task=current_task,
     )
+
+
+def get_top_open(engine: CuriosityEngine, limit: int = 10):
+    """顶层接口：获取优先级最高的前 N 个待探索议题"""
+    return engine.get_top_open(limit)
+
+
+def resolve(engine: CuriosityEngine, item_id: int, conclusion: str):
+    """顶层接口：标记议题已解决"""
+    return engine.resolve(item_id, conclusion)
+
+
+def get_daily_list(engine: CuriosityEngine):
+    """顶层接口：获取今日新增议题"""
+    return engine.get_daily_list()
+
+
+def full_report(engine: CuriosityEngine):
+    """顶层接口：生成完整报告"""
+    return engine.full_report()
 
 
 # 测试

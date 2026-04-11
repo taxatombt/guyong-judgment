@@ -6,6 +6,7 @@ from .goal_system import (
     DailyPriority,
     GoalSystem,
     get_goal_system,
+    format_hierarchy,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "DailyPriority",
     "GoalSystem",
     "get_goal_system",
+    "format_hierarchy",
 ]

@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-feedback_system.py — 反馈系统 最小可用版
+feedback_system.py — 聚活反馈记录系统
+**独特核心技术（聚活独有）：双层反馈锚定**
 
-核心问题：**外界给了什么反馈？反馈怎么进来更新记忆？**
+普通反馈系统就是记个log，统计对不对就完了。聚活不是：
 
-设计原则：
-- 从小处开始，只做核心：接收人类反馈 → 更新各层系统
-- 完整闭环：反馈 → 更新因果记忆 → 更新自我模型 → 更新情绪模式
-- 松耦合：不侵入前面模块，只做更新入口
+1. **判断层锚定** → 这次判断对不对？（对错反馈）
+   - 绑定到对应因果事件
+   - 更新偏差/优势统计
+   - 直接更新自我模型
 
-更新对象：
-1. 因果记忆：把反馈写回对应因果事件
-2. 自我模型：根据反馈更新已知偏差和优势统计
-3. 情感系统：根据反馈更新情绪信号模式（是不是真信号）
+2. **进化层锚定** → 这次进化方向对不对？（进化反馈）
+   - OpenSpace三级进化后，你觉得改得对不对？
+   - 错了就回滚到父版本，保留历史快照
+   - 对了就固化下来，提升置信度
+
+**双重锚定**保证：只有你真正认可的进化才会固化，不会越进化越歪，永远对齐你的真实想法。
+
+核心闭环：
+反馈接收 → 判断层锚定 → 进化层锚定（如果是进化）→ 更新因果记忆 → 更新自我模型 → 更新情感系统 → 完成闭环
 """
+
+# 核心区别：不只记录判断对错，还要记录进化方向对不对 → 双重锚定，永远对齐你的真实想法
 
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass, field
@@ -28,12 +36,16 @@ FEEDBACK_LOG_FILE = Path(__file__).parent.parent / "feedback_log.jsonl"
 
 @dataclass
 class Feedback:
-    """一条反馈"""
+    """一条反馈
+    聚活独特：双层反馈锚定 → 判断层+进化层
+    """
     feedback_id: int
     related_judgment_id: str      # 关联哪个判断
     related_event_id: Optional[int] # 关联哪个因果事件
+    related_skill_id: Optional[str] # 关联哪个OpenSpace进化技能（进化层锚定）
     feedback_text: str             # 反馈内容
-    is_correct: Optional[bool]    # 之前判断正确吗？
+    is_correct: Optional[bool]    # 之前判断正确吗？（判断层）
+    is_evolution_correct: Optional[bool] # 这次进化方向正确吗？（进化层）
     created_at: str
 
     def to_dict(self):
@@ -41,14 +53,26 @@ class Feedback:
             "feedback_id": self.feedback_id,
             "related_judgment_id": self.related_judgment_id,
             "related_event_id": self.related_event_id,
+            "related_skill_id": self.related_skill_id,
             "feedback_text": self.feedback_text,
             "is_correct": self.is_correct,
+            "is_evolution_correct": self.is_evolution_correct,
             "created_at": self.created_at,
         }
 
     @classmethod
     def from_dict(cls, data):
-        return cls(**data)
+        # 兼容旧格式
+        return cls(
+            feedback_id=data["feedback_id"],
+            related_judgment_id=data["related_judgment_id"],
+            related_event_id=data.get("related_event_id"),
+            related_skill_id=data.get("related_skill_id"),
+            feedback_text=data["feedback_text"],
+            is_correct=data.get("is_correct"),
+            is_evolution_correct=data.get("is_evolution_correct"),
+            created_at=data["created_at"],
+        )
 
 
 def _next_feedback_id() -> int:
@@ -89,25 +113,31 @@ def add_feedback(
     event_id: Optional[int],
     feedback_text: str,
     is_correct: Optional[bool] = None,
+    related_skill_id: Optional[str] = None,
+    is_evolution_correct: Optional[bool] = None,
 ) -> Feedback:
     """
+    聚活独特技术：双层反馈锚定 → 判断层+进化层
     添加一条反馈 → 自动更新所有相关系统：
-    - 保存反馈日志
-    - 更新因果记忆（给事件加上反馈）
-    - 更新自我模型（总结偏差）
-    - 更新情感系统（更新信号概率）
+    - **判断层锚定**：保存反馈日志 → 更新因果记忆 → 更新自我模型 → 更新情感系统
+    - **进化层锚定**：如果是OpenSpace进化反馈 → 处理回滚/固化：
+      - 如果进化错了 → 回滚到父版本，保留历史快照
+      - 如果进化对了 → 固化下来，提升置信度
     """
     # 创建反馈对象
     fb = Feedback(
         feedback_id=_next_feedback_id(),
         related_judgment_id=judgment_id,
         related_event_id=event_id,
+        related_skill_id=related_skill_id,
         feedback_text=feedback_text,
         is_correct=is_correct,
+        is_evolution_correct=is_evolution_correct,
         created_at=datetime.now().isoformat(),
     )
     save_feedback(fb)
 
+    # ========== 第一层：判断层锚定 ==========
     # 更新因果记忆：把反馈写回对应事件
     if event_id is not None:
         update_causal_event_feedback(event_id, feedback_text)
@@ -118,7 +148,33 @@ def add_feedback(
     # 如果反馈涉及情绪信号判断，更新情感系统
     update_emotion_pattern_from_feedback(fb)
 
+    # ========== 第二层：进化层锚定（聚活独特） ==========
+    if related_skill_id is not None and is_evolution_correct is not None:
+        process_evolution_feedback(related_skill_id, is_evolution_correct)
+
     return fb
+
+
+def process_evolution_feedback(skill_id: str, is_correct: bool) -> bool:
+    """
+    聚活独特技术：进化层锚定处理
+    - 正确 → 固化，提升置信度
+    - 错误 → 回滚到父版本，保留历史快照
+    """
+    from openspace.openspace_evolution import get_skill_by_id, rollback_to_parent, confirm_evolution
+    
+    skill = get_skill_by_id(skill_id)
+    if not skill:
+        return False
+    
+    if is_correct:
+        # 进化正确 → 固化，提升置信度
+        confirm_evolution(skill_id)
+        return True
+    else:
+        # 进化错误 → 回滚到父版本
+        rollback_to_parent(skill_id)
+        return True
 
 
 def update_causal_event_feedback(event_id: int, feedback: str):

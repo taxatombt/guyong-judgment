@@ -175,6 +175,56 @@ from .pipeline import (
     format_guyong_json,
 )
 
+# 新增模块：标准化行动信号输出（给机器人/执行器）
+from .action_signal import (
+    ActionTypeEnum,
+    ActionSignal,
+    ActionSignalList,
+    generate_action_signals,
+    format_for_robot,
+    save_to_file,
+    load_from_file,
+)
+
+# 新增模块：大模型接入适配器（MiniMax/OpenAI/Ollama 可配置）
+from .llm_adapter import (
+    LLMAdapter,
+    LLMResponse,
+    CompletionRequest,
+    MiniMaxAdapter,
+    OpenAIAdapter,
+    OllamaAdapter,
+    load_config,
+    get_adapter,
+)
+
+from .chat_system import (
+    ChatMessage,
+    ChatSession,
+    ChatSystem,
+    load_chat_system,
+    get_current_session,
+    auto_trigger_functions,
+    save_dialogue_to_file,
+    list_sessions,
+)
+
+# 感知层导出
+from .perception import (
+    AttentionFilter,
+    AttentionItem,
+    IncomingMessage,
+    FilterResult,
+    PDFExtractorAdapter,
+    PDFBlock,
+    ExtractedPDF,
+    extract_pdf_to_judgment_input,
+    WebExtractorAdapter,
+    WebBlock,
+    ExtractedWeb,
+    extract_web_to_judgment_input,
+)
+
 
 __all__ = [
     # 核心接口
@@ -364,4 +414,33 @@ __all__ = [
     "WebBlock",
     "ExtractedWeb",
     "extract_web_to_judgment_input",
+    
+    # 行动信号输出层（给机器人/执行器）
+    "ActionTypeEnum",
+    "ActionSignal",
+    "ActionSignalList",
+    "generate_action_signals",
+    "format_for_robot",
+    "save_to_file",
+    "load_from_file",
+    
+    # 大模型接入适配器
+    "LLMAdapter",
+    "LLMResponse",
+    "CompletionRequest",
+    "MiniMaxAdapter",
+    "OpenAIAdapter",
+    "OllamaAdapter",
+    "load_config",
+    "get_adapter",
+    
+    # 聊天系统（固定单用户对话）
+    "ChatMessage",
+    "ChatSession",
+    "ChatSystem",
+    "load_chat_system",
+    "get_current_session",
+    "auto_trigger_functions",
+    "save_dialogue_to_file",
+    "list_sessions",
 ]

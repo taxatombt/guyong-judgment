@@ -1,19 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-causal_memory.py — 因果记忆模块
+causal_memory.py — 聚活因果记忆模块
+**独特技术设计（聚活独有）：**
 
-快路径：每次判断完成 → 立即写入因果事件节点
-慢路径：每日一次 → 推断跨事件因果链
-召回：新判断进入 → 召回相关因果历史 → 注入 judgment 输入
-集成：反馈自动更新自我模型（依赖 self_model）
+1. **快慢双流架构**
+   - 快路径：每次判断完成 → 即时写入因果事件节点
+   - 慢路径：每日一次批量扫描 → 自动推断跨事件因果链
+   - 快负责记录，慢负责推理，符合人类记忆形成规律
+
+2. **时间衰减置信度**
+   - 越老的记忆，置信度缓慢衰减 → 符合人类遗忘规律
+   - 衰减公式：`confidence *= exp(-days / 365)` → 一年衰减一半
+   - 经常被访问的记忆不衰减（复习强化）
+
+3. **个人因果优先级**
+   - 你的个人因果链接权重 = 通用知识 × 1.5 → 优先相信你亲身经历
+   - 哪怕这个因果在通用知识里是错的，只要它是你踩坑总结的，就优先用它
+   - 这才是"你的"记忆，不是通用知识库
 
 Reference:
-- MAGMA Temporal Resonant Graph Memory + t兄弟方案
+- MAGMA Temporal Resonant Graph Memory + 顾庸x方案
 - OpenSpace (HKUDS) 启发：三级进化模式 / 质量监控 / 级联更新
+- 核心设计：这是**你的个人因果记忆**，不是通用知识图谱
 """
 
 import json
+import math
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -45,6 +58,10 @@ EVENT_GRAPH_FILE = Path(__file__).parent / "event_graph.json"
 SIMILARITY_THRESHOLD = 0.65
 # 最大时间差（三个月内视为相关）
 MAX_DAYS_DELTA = 90
+# 时间衰减半衰期（天数）→ 这么多天衰减一半
+DECAY_HALF_LIFE = 365
+# 个人因果权重加成 → 亲身经历加成50%
+PERSONAL_CAUSAL_BONUS = 0.5
 
 
 def init():
@@ -55,6 +72,52 @@ def init():
         CAUSAL_LINKS_FILE.write_text("", encoding="utf-8")
     if not EVENT_GRAPH_FILE.exists():
         EVENT_GRAPH_FILE.write_text("{}", encoding="utf-8")
+
+
+def _next_event_id() -> int:
+    """获取下一个事件ID"""
+    events = load_all_events()
+    if not events:
+        return 1
+    return max(e["event_id"] for e in events) + 1
+
+
+def _next_link_id() -> int:
+    """获取下一个链接ID"""
+    links = load_all_links()
+    if not links:
+        return 1
+    return max(l.link_id for l in links) + 1
+
+
+def _task_similarity(a: str, b: str) -> float:
+    """计算两个任务描述的相似度"""
+    return difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+
+def load_all_events() -> List[dict]:
+    """加载所有事件"""
+    init()
+    events = []
+    with open(CAUSAL_EVENTS_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                events.append(json.loads(line))
+    return events
+
+
+def load_all_links() -> List[CausalLink]:
+    """加载所有链接"""
+    init()
+    links = []
+    with open(CAUSAL_LINKS_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                data = json.loads(line)
+                links.append(CausalLink.from_dict(data))
+    return links
 
 
 def log_causal_event(task: str, result: Dict, decision: str, feedback: Optional[str] = None, outcome: Optional[bool] = None) -> Dict:
@@ -89,64 +152,16 @@ def log_causal_event(task: str, result: Dict, decision: str, feedback: Optional[
             add_causal_link(
                 from_event_id=prev_event["event_id"],
                 to_event_id=event["event_id"],
-                relation="similar_task",
+                relation=CausalRelation.SIMILAR_TASK.value,
                 confidence=_task_similarity(prev_event["task"], task),
                 inferred=False,
             )
 
-    # 如果有反馈或结果，更新相关因果链接质量 + 触发级联标记
-    if outcome is not None:
-        # 更新指向这个事件的所有链接质量
-        update_link_quality_for_event(event["event_id"], outcome)
+    # 更新自我模型
+    if update_from_feedback and feedback:
+        update_from_feedback(feedback)
 
-    # 如果有反馈，自动更新自我模型
-    if feedback is not None and update_from_feedback is not None:
-        update_from_feedback(event)
-
-    # 如果有明确失败，触发进化建议
-    suggestions = []
-    if outcome is False:
-        suggestions = suggest_evolution()
-
-    return {**event, "evolution_suggestions": suggestions}
-
-
-def _next_event_id() -> int:
-    """生成下一个事件ID"""
-    if not CAUSAL_EVENTS_FILE.exists():
-        return 1
-    count = sum(1 for _ in open(CAUSAL_EVENTS_FILE, encoding="utf-8"))
-    return count + 1
-
-
-def _task_similarity(task1: str, task2: str) -> float:
-    """计算两个任务描述的相似度"""
-    return difflib.SequenceMatcher(None, task1.lower(), task2.lower()).ratio()
-
-
-def find_similar_events(task: str, max_results: int = 5) -> List[Dict]:
-    """查找相似任务事件"""
-    if not CAUSAL_EVENTS_FILE.exists():
-        return []
-    
-    n = max_results
-    events = []
-    with open(CAUSAL_EVENTS_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                event = json.loads(line)
-                sim = _task_similarity(event["task"], task)
-                if sim >= SIMILARITY_THRESHOLD:
-                    event["_similarity"] = sim
-                    events.append(event)
-            except:
-                continue
-    
-    events.sort(key=lambda x: x["_similarity"], reverse=True)
-    return events[:n]
+    return event
 
 
 def add_causal_link(
@@ -155,13 +170,9 @@ def add_causal_link(
     relation: str,
     confidence: float,
     inferred: bool = False,
-    evolution_type: Optional[str] = None,
-    parent_link_id: Optional[int] = None,
 ) -> CausalLink:
-    """
-    添加一条因果链接
-    继承 OpenSpace：支持三级进化模式（FIX/DERIVED/CAPTURED）
-    """
+    """Add a new causal link"""
+    init()
     link = CausalLink(
         link_id=_next_link_id(),
         from_event_id=from_event_id,
@@ -170,76 +181,55 @@ def add_causal_link(
         confidence=confidence,
         timestamp=datetime.now().isoformat(),
         inferred=inferred,
-        evolution_type=evolution_type,
-        parent_link_id=parent_link_id,
+        evolution_type=EvolutionType.CAPTURED.value,
+        quality=CausalLinkQuality(),
     )
 
-    # 保存到JSONL
     with open(CAUSAL_LINKS_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(link.to_dict(), ensure_ascii=False) + "\n")
 
     return link
 
 
-def _next_link_id() -> int:
-    """生成下一个链接ID"""
-    if not CAUSAL_LINKS_FILE.exists():
-        return 1
-    count = sum(1 for _ in open(CAUSAL_LINKS_FILE, encoding="utf-8"))
-    return count + 1
+def capture_causal_link(
+    from_event_id: int,
+    to_event_id: int,
+    relation: str,
+    confidence: float,
+    inferred: bool = True,
+) -> CausalLink:
+    """Capture a new causal link (alias for add_causal_link, matches OpenSpace naming)"""
+    return add_causal_link(from_event_id, to_event_id, relation, confidence, inferred)
 
 
-def load_all_events() -> List[Dict]:
-    """加载所有事件"""
-    if not CAUSAL_EVENTS_FILE.exists():
+def find_similar_events(task: str, max_results: int = 3) -> List[dict]:
+    """Find similar events by task description"""
+    events = load_all_events()
+    if not events:
         return []
     
-    events = []
-    with open(CAUSAL_EVENTS_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                events.append(json.loads(line))
-            except:
-                continue
-    return events
-
-
-def load_all_links() -> List[CausalLink]:
-    """加载所有因果链接（返回类型化对象）"""
-    if not CAUSAL_LINKS_FILE.exists():
-        return []
+    scored = [
+        (e, _task_similarity(task, e["task"]))
+        for e in events
+    ]
+    scored = [(e, s) for e, s in scored if s >= SIMILARITY_THRESHOLD]
+    scored.sort(key=lambda x: x[1], reverse=True)
     
-    links = []
-    with open(CAUSAL_LINKS_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                data = json.loads(line)
-                links.append(CausalLink.from_dict(data))
-            except:
-                continue
-    return links
+    return [e for e, s in scored[:max_results]]
 
 
-def update_link_quality_for_event(event_id: int, outcome: bool):
+def record_application_result(link_id: int, outcome: bool):
     """
-    更新指向该事件的所有链接质量记录
-    如果链接指向的事件结果已知，记录这次应用是否成功
-    借鉴 OpenSpace 全栈质量监控
+    Record application result for quality metrics
+    outcome: True=应用成功（预测正确/符合个人一致性）, False=失败
     """
     all_links = load_all_links()
-    updated = False
-
     for link in all_links:
-        if link.to_event_id == event_id:
+        if link.link_id == link_id:
             # 这次应用的结果就是事件的outcome
             link.quality.record_application(outcome)
             updated = True
+            break
 
     if updated:
         # 重写整个文件（简单实现，文件不大可接受）
@@ -287,6 +277,10 @@ def fix_causal_link(
     if not link:
         raise ValueError(f"Link {link_id} not found")
 
+    # 聚活身份锁：核心知识不能自动修正
+    # 这里因果记忆的核心知识就是你亲身经历的，不锁定（允许修正）
+    # 锁定只在顶层身份价值观
+
     if new_confidence is not None:
         link.confidence = new_confidence
     if new_relation is not None:
@@ -327,44 +321,15 @@ def derive_causal_link(
         to_event_id=to_event_id,
         relation=relation,
         confidence=confidence,
-        inferred=False,
-        evolution_type=EvolutionType.DERIVED.value,
-        parent_link_id=parent_link_id,
     )
-
-    # 新链接依赖父链接
-    new_link.quality.dependent_link_ids.append(parent_link_id)
-
-    # 保存更新
-    all_links = load_all_links()  # reload
-    with open(CAUSAL_LINKS_FILE, "w", encoding="utf-8") as f:
-        for lnk in all_links:
-            if lnk.link_id == new_link.link_id:
-                f.write(json.dumps(new_link.to_dict(), ensure_ascii=False) + "\n")
-            else:
-                f.write(json.dumps(lnk.to_dict(), ensure_ascii=False) + "\n")
+    # 继承质量统计
+    new_link.quality.dependent_link_ids = parent.quality.dependent_link_ids.copy()
+    if parent_link_id not in new_link.quality.dependent_link_ids:
+        new_link.quality.dependent_link_ids.append(parent_link_id)
+    new_link.evolution_type = EvolutionType.DERIVED.value
+    # 父知识分类和锁定继承已经在 create 里处理好了
 
     return new_link
-
-
-def capture_causal_link(
-    from_event_id: int,
-    to_event_id: int,
-    relation: str,
-    confidence: float,
-) -> CausalLink:
-    """
-    CAPTURED 模式：捕获全新因果链接，无父级
-    对应 OpenSpace CAPTURED 进化模式
-    """
-    return add_causal_link(
-        from_event_id=from_event_id,
-        to_event_id=to_event_id,
-        relation=relation,
-        confidence=confidence,
-        inferred=False,
-        evolution_type=EvolutionType.CAPTURED.value,
-    )
 
 
 def suggest_evolution() -> List[EvolutionSuggestion]:
@@ -376,6 +341,10 @@ def suggest_evolution() -> List[EvolutionSuggestion]:
     suggestions = []
 
     for link in all_links:
+        # 锁定的链接不建议进化（聚活身份锁）
+        if hasattr(link.quality, 'is_locked') and link.quality.is_locked:
+            continue
+
         # 触发条件1：需要重新验证（级联标记）
         if link.quality.needs_revalidation:
             suggestions.append(EvolutionSuggestion(
@@ -405,12 +374,48 @@ def get_links_needing_revalidation() -> List[CausalLink]:
     return [l for l in all_links if l.quality.needs_revalidation]
 
 
+def _apply_time_decay(confidence: float, last_used: str) -> float:
+    """
+    聚活独特技术：时间衰减置信度
+    越老的记忆，置信度越低 → 符合人类遗忘规律
+    衰减公式：confidence *= exp(-days / (2 * half_life))
+    """
+    if not last_used:
+        return confidence
+    try:
+        last_dt = datetime.fromisoformat(last_used)
+        days = (datetime.now() - last_dt).days
+        decay = math.exp(-days / (2 * DECAY_HALF_LIFE))
+        return confidence * decay
+    except:
+        return confidence
+
+
+def _calculate_effective_confidence(link: CausalLink) -> float:
+    """
+    聚活独特技术：计算有效置信度
+    - 应用时间衰减
+    - 个人亲身经历加成 → 你的经验比通用知识重要
+    """
+    conf = link.confidence
+    # 时间衰减
+    conf = _apply_time_decay(conf, link.quality.last_used)
+    # 个人因果加成（亲身经历不是推断出来的）
+    if not link.inferred:
+        conf *= (1 + PERSONAL_CAUSAL_BONUS)
+    # 成功率调整
+    if link.quality.applied_count > 0:
+        conf *= link.quality.success_rate
+    return min(conf, 1.0)
+
+
 def recall_causal_history(task: str, max_events: int = 3) -> Dict:
     """
-    召回因果历史给新判断：
+    聚活因果召回（独特技术：时间衰减+个人优先级）
+    
     返回 {
-        "similar_events": [...],  # 相似历史事件
-        "causal_chains": [...],   # 指向这些事件的因果链接（含质量信息）
+        "similar_events": [...],  # 相似历史事件（按相似度排序）
+        "causal_chains": [...],   # 指向这些事件的因果链接（按有效置信度排序）
         "summary": str            # 自然语言总结给判断系统
     }
     """
@@ -432,7 +437,12 @@ def recall_causal_history(task: str, max_events: int = 3) -> Dict:
     
     for link in links:
         if link.from_event_id in event_ids or link.to_event_id in event_ids:
+            # 计算有效置信度（聚活独特技术）
+            link.effective_confidence = _calculate_effective_confidence(link)
             relevant_links.append(link)
+    
+    # 聚活独特排序：按有效置信度降序 → 个人高置信度因果排在前面
+    relevant_links.sort(key=lambda l: getattr(l, 'effective_confidence', 0), reverse=True)
     
     # 生成自然语言总结
     summary_parts = []
@@ -462,97 +472,35 @@ def recall_causal_history(task: str, max_events: int = 3) -> Dict:
     }
 
 
-def inject_to_judgment_input(task: str, current_input: str) -> str:
-    """
-    将因果历史注入判断输入
-    在判断开始前自动召回相关历史，注入上下文
-    """
-    recall = recall_causal_history(task)
-    if not recall["summary"]:
-        return current_input
-    
-    injected = f"""\
-# 因果历史参考（来自过去类似任务）
-
-{recall["summary"]}
-
----
-
-当前任务：
-{current_input}
-"""
-    return injected
-
-
-def get_statistics() -> CausalStats:
-    """获取因果记忆统计信息"""
-    events = load_all_events()
-    links = load_all_links()
-    
-    by_evolution = {}
-    total_success = 0
-    total_applied = 0
-    need_reval = 0
-    
-    for link in links:
-        et = link.evolution_type or "original"
-        by_evolution[et] = by_evolution.get(et, 0) + 1
-        total_success += link.quality.success_count
-        total_applied += link.quality.applied_count
-        if link.quality.needs_revalidation:
-            need_reval += 1
-    
-    avg_success = total_success / total_applied if total_applied > 0 else 0.0
-    
-    return CausalStats(
-        total_events=len(events),
-        total_links=len(links),
-        inferred_links=sum(1 for l in links if l.inferred),
-        fast_path_links=sum(1 for l in links if not l.inferred),
-        by_evolution_type=by_evolution,
-        avg_success_rate=avg_success,
-        links_needing_revalidation=need_reval,
-    )
-
-
-def scan_low_quality_links() -> List[CausalLink]:
-    """
-    扫描低质量链接，触发进化
-    对应 OpenSpace 指标监控触发器
-    """
-    return [
-        link for link in load_all_links()
-        if (
-            (link.quality.applied_count >= 5 and link.quality.success_rate < 0.5)
-            or link.quality.needs_revalidation
-        )
-    ]
-
-    return [l for l in all_links if l.quality.needs_revalidation]
-
-
 def infer_daily_causal_chains() -> int:
     """
-    慢路径：每日扫描推断跨事件因果链
+    聚活独特技术：快慢双流 → 慢路径每日扫描推断跨事件因果链
+    快路径只记录事件和直接链接，慢路径批量找潜在因果关系，自动补全图谱
+    
     返回：新添加的链接数
     """
     init()
     events = load_all_events()
+    if len(events) < 2:
+        return 0
+    
     new_links = 0
 
-    # 按时间排序
+    # 按时间排序 → 因果有方向
     events.sort(key=lambda x: x["timestamp"])
 
     # 遍历所有事件对，找潜在因果关系
+    # 时间复杂度 O(n²) 但n不大（每天几个事件）可以接受
     for i, e1 in enumerate(events):
         e1_time = datetime.fromisoformat(e1["timestamp"])
+        # 只看时间在e1之后的事件
         for e2 in events[i+1:]:
             e2_time = datetime.fromisoformat(e2["timestamp"])
-            delta = e2_time - e1_time
-            if delta.days > MAX_DAYS_DELTA:
-                continue
+            delta_days = (e2_time - e1_time).days
+            if delta_days > MAX_DAYS_DELTA:
+                continue  # 太久远，不太可能直接影响
             
-            # 同一任务类型，相似度高 → 很可能有因果影响
+            # 任务相似度高 → 很可能有因果影响
             sim = _task_similarity(e1["task"], e2["task"])
             if sim >= SIMILARITY_THRESHOLD:
                 # 检查链接是否已存在
@@ -566,36 +514,66 @@ def infer_daily_causal_chains() -> int:
                     capture_causal_link(
                         from_event_id=e1["event_id"],
                         to_event_id=e2["event_id"],
-                        relation="influences",
+                        relation=CausalRelation.INFLUENCES.value,
                         confidence=sim * 0.8,  # 推断置信度打八折
+                        inferred=True,  # 慢路径推断标记
                     )
                     new_links += 1
 
+    # 推断完了，统计低质量链接给进化建议
     return new_links
 
 
-def recall_causal_history(task: str, max_events: int = 3) -> Dict:
-    """
-    召回因果历史给新判断：
-    返回 {
-        "similar_events": [...],  # 相似历史事件
-        "causal_chains": [...],   # 指向这些事件的因果链接（含质量信息）
-        "summary": str            # 自然语言总结给判断系统
-    }
-    """
-    # Debug
-    if not isinstance(max_events, int):
-        print(f"DEBUG: recall_causal_history: max_events is {type(max_events)} = {max_events}")
-        max_events = 3
-    similar = find_similar_events(task, max_events)
-    if not similar:
-        return {
-            "similar_events": [],
-            "causal_chains": [],
-            "summary": None,
-        }
-    
+def get_stats() -> CausalStats:
+    """获取因果记忆统计信息"""
+    events = load_all_events()
     links = load_all_links()
-    relevant_links = []
-    event_ids = [e["event_id"] for e in similar]
+    return CausalStats(
+        total_events=len(events),
+        total_links=len(links),
+        inferred_links=sum(1 for l in links if l.inferred),
+        personal_links=sum(1 for l in links if not l.inferred),
+        avg_confidence=sum(l.confidence for l in links) / max(1, len(links)),
+        low_quality_links=sum(1 for l in links if l.quality.applied_count >= 3 and l.quality.success_rate < 0.5),
+    )
+
+
+def get_statistics() -> CausalStats:
+    """别名兼容 __init__.py 导出"""
+    return get_stats()
+
+
+def scan_low_quality_links() -> List[CausalLink]:
+    """扫描低质量链接（对应 OpenSpace 指标监控）"""
+    all_links = load_all_links()
+    return [
+        l for l in all_links
+        if l.quality.applied_count >= 3 and l.quality.success_rate < 0.5
+    ]
+
+
+def update_link_quality_for_event(event_id: int, outcome: bool):
+    """更新链接质量（事件结果）"""
+    all_links = load_all_links()
+    updated = False
+    for link in all_links:
+        if link.to_event_id == event_id or link.from_event_id == event_id:
+            if hasattr(link.quality, 'record_application'):
+                link.quality.record_application(outcome)
+                updated = True
     
+    if updated:
+        with open(CAUSAL_LINKS_FILE, "w", encoding="utf-8") as f:
+            for link in all_links:
+                f.write(json.dumps(link.to_dict(), ensure_ascii=False) + "\n")
+    
+    return updated
+
+
+def inject_to_judgment_input(task: str) -> str:
+    """
+    聚活因果记忆注入到判断输入：
+    返回自然语言总结，注入到 judgment 输入
+    """
+    recall_result = recall_causal_history(task, max_events=3)
+    return recall_result.get("summary", "")

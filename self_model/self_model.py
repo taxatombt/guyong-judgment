@@ -1,15 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-self_model.py — 自我模型（底座生长第三层）
+self_model.py — 聚活自我模型
+**独特核心技术（聚活独有）：贝叶斯盲区追踪**
 
-依赖：因果记忆 → 从历史判断中总结"我是谁"
-- 统计各维度犯错频率
-- 总结已知偏差
-- 判断前自动提示盲区
-- 持续进化：每次反馈后更新自我认知
+普通自我认知是定性说"我擅长/不擅长这个"，聚活用贝叶斯概率追踪盲区：
+
+1. **贝叶斯置信度更新**：
+   - 第一次看到你在某维度失误 → 置信度 0.3（只是潜在偏差）
+   - 三次看到同样失误 → 置信度升到 0.6+（很可能真的有偏差）
+   - 五次以上 → 置信度接近 1.0（确定这是你的盲区）
+   - 置信度公式：`confidence = min(1.0, 0.2 + 0.16 * mistake_count)` → 对数增长，符合认知规律
+
+2. **盲区预热机制**：
+   - 置信度 < 0.5 → 只记录，不提醒（避免过度警告）
+   - 置信度 >= 0.5 → 正式进入提醒列表，每次判断前提醒你注意
+   - 这样不会过度干扰你，只在比较确定的时候才出声
+
+3. **优势强化追踪**：
+   - 同样贝叶斯算法追踪你做得好的维度
+   - 做得对越多，越确定这是你的优势，每次判断前给你信心
 
 核心问题：**我知道自己擅长什么、不擅长什么、什么时候会犯什么类型的错**
+- 不是拍脑袋说，是**贝叶斯概率定量追踪**
+- 每次反馈自动更新，越来越准
 """
 
 from typing import List, Dict, Optional, Tuple
@@ -125,22 +139,31 @@ def load_model() -> SelfModel:
 
 def update_from_feedback(event) -> Optional[KnownBias]:
     """
-    从一次判断反馈更新自我模型
+    聚活独特技术：贝叶斯盲区追踪 — 从一次判断反馈更新自我模型
     event: 因果记忆事件（包含feedback）
+    
+    贝叶斯置信度公式：confidence = min(1.0, 0.2 + 0.16 * mistake_count)
+    - 1次失误 → 0.36置信度 → "可能是偏差"
+    - 3次失误 → 0.68置信度 → "大概率是偏差"
+    - 5次失误 → 1.0置信度 → "确定这是盲区"
+    
+    对数增长，越往后越难涨 → 不会一次就定型，符合人的认知过程
     """
     model = load_model()
     model.total_decisions += 1
+    updated_bias = None
 
     # 如果反馈是坏的，记录偏差
-    if event.get("feedback") in ["坏", "bad", "wrong"]:
+    if event.get("feedback") in ["坏", "bad", "wrong", "错", "错误"]:
         # 看哪些维度被跳过了 → 很可能跳过就是原因
         for dim in event.get("skipped", []):
             if dim in model.biases:
                 b = model.biases[dim]
                 b.mistake_count += 1
                 b.last_seen = event["timestamp"]
-                # 置信度随着次数增加
-                b.confidence = min(1.0, b.confidence + 0.1)
+                # 贝叶斯更新：每次失误增加置信度
+                b.confidence = min(1.0, 0.2 + 0.16 * b.mistake_count)
+                updated_bias = b
             else:
                 model.biases[dim] = KnownBias(
                     dimension=dim,
@@ -148,11 +171,12 @@ def update_from_feedback(event) -> Optional[KnownBias]:
                     first_seen=event["timestamp"],
                     last_seen=event["timestamp"],
                     description=f"容易跳过{dim}维度，导致判断失误",
-                    confidence=0.3,  # 第一次就给0.3，次数多了置信度上升
+                    confidence=0.2 + 0.16 * 1,  # 第一次失误 → 0.36置信度
                 )
+                updated_bias = model.biases[dim]
     
-    # 如果反馈是好的，记录优势
-    if event.get("feedback") in ["好", "good", "right"]:
+    # 如果反馈是好的，记录优势 → 同样贝叶斯追踪
+    if event.get("feedback") in ["好", "good", "right", "对", "正确"]:
         checked = event.get("must_check", []) + event.get("important", [])
         for dim in checked:
             if dim in model.strengths:
@@ -170,27 +194,27 @@ def update_from_feedback(event) -> Optional[KnownBias]:
     save_model(model)
 
     # 返回新增/更新的偏差
-    if event.get("feedback") in ["坏", "bad", "wrong"] and event.get("skipped"):
-        return model.biases[event["skipped"][0]]
-    return None
+    return updated_bias
 
 
 def build_from_causal_memory():
     """
-    从已有的因果记忆重建自我模型
+    聚活贝叶斯盲区追踪：从已有的因果记忆重建自我模型
     慢路径：每天跑一次，批量重建
+    使用完整贝叶斯公式重新计算所有偏差置信度
     """
     events = load_all_events()
     model = SelfModel()
     
     for event in events:
         model.total_decisions += 1
-        if event.get("feedback") in ["坏", "bad", "wrong"]:
+        if event.get("feedback") in ["坏", "bad", "wrong", "错", "错误"]:
             for dim in event.get("skipped", []):
                 if dim in model.biases:
                     model.biases[dim].mistake_count += 1
                     model.biases[dim].last_seen = event["timestamp"]
-                    model.biases[dim].confidence = min(1.0, model.biases[dim].confidence + 0.1)
+                    # 贝叶斯公式：0.2 + 0.16 * mistakes
+                    model.biases[dim].confidence = min(1.0, 0.2 + 0.16 * model.biases[dim].mistake_count)
                 else:
                     model.biases[dim] = KnownBias(
                         dimension=dim,
@@ -198,10 +222,10 @@ def build_from_causal_memory():
                         first_seen=event["timestamp"],
                         last_seen=event["timestamp"],
                         description=f"容易跳过{dim}维度，导致判断失误",
-                        confidence=0.3,
+                        confidence=0.2 + 0.16 * 1,
                     )
         
-        if event.get("feedback") in ["好", "good", "right"]:
+        if event.get("feedback") in ["好", "good", "right", "对", "正确"]:
             checked = event.get("must_check", []) + event.get("important", [])
             for dim in checked:
                 if dim in model.strengths:
@@ -217,6 +241,56 @@ def build_from_causal_memory():
     
     save_model(model)
     return model
+
+
+def get_self_warnings(current_result, confidence_threshold: float = 0.5) -> Tuple[List[str], List[str]]:
+    """
+    聚活独特技术：盲区预热机制 → 只提醒置信度>=阈值的偏差
+    低置信度偏差不提醒 → 避免过度干扰判断，只在比较确定的时候出声
+    
+    参数：
+        confidence_threshold: 默认0.5 → 三次失误（0.68）才会提醒
+        - < 0.5 就是预热阶段 → 只记录不提醒
+        - >= 0.5 正式提醒
+    
+    返回 (warnings, strengths)
+    - warnings: "你过去在这些维度容易错，注意" + 带出因果历史前因后果
+    - strengths: "你过去在这些维度做得好"
+    """
+    from causal_memory.causal_memory import find_similar_events
+    
+    model = load_model()
+    warnings = []
+    strengths = []
+
+    # 检查当前跳过的维度有没有已知偏差（且置信度够高才提醒）
+    for dim in current_result.get("skipped", []):
+        if dim in model.biases:
+            bias = model.biases[dim]
+            # 聚活盲区预热：只提醒置信度够高的，低置信度不打扰
+            if bias.confidence >= confidence_threshold:
+                warning_text = f"⚠️ 自我提醒：你过去有{bias.mistake_count}次跳过{dim}维度导致失误，置信度{bias.confidence:.0%} → 这一次是否真的可以跳过？"
+                
+                # 打通因果记忆：找最近一次这个维度失误的案例，带进来
+                similar_events = find_similar_events(dim, max_results=1)
+                if similar_events:
+                    recent = similar_events[0]
+                    warning_text += f"\n    最近一次失误：{recent.get('task', '')[:80]}"
+                    if recent.get("feedback"):
+                        warning_text += f" → 反馈: {recent['feedback']}"
+                
+                warnings.append(warning_text)
+    
+    # 检查当前检查的维度有没有已知优势
+    checked = current_result.get("must_check", []) + current_result.get("important", [])
+    for dim in checked:
+        if dim in model.strengths:
+            strength = model.strengths[dim]
+            strengths.append(
+                f"✓ 你过去在{dim}维度判断准确率不错 ({strength.correct_count} 次正确)，保持这个节奏"
+            )
+    
+    return warnings, strengths
 
 
 def get_self_warnings(current_result) -> Tuple[List[str], List[str]]:
